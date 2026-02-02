@@ -1,0 +1,12 @@
+flask==3.0.0
+flask-socketio==5.3.6
+psutil==5.9.8
+scapy==2.5.0
+asyncio
+aiomysql==0.2.0
+cryptography==42.0.5
+faker==25.0.0
+python-socketio==5.10.0
+loguru==0.7.2
+asyncio-mqtt==0.15.1
+schedule==1.2.1
