@@ -8,5 +8,6 @@ cryptography==42.0.5
 faker==25.0.0
 python-socketio==5.10.0
 loguru==0.7.2
-asyncio-mqtt==0.15.1
+asyncio-mqtt>=0.16.1
 schedule==1.2.1
+
