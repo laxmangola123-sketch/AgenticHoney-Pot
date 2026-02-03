@@ -1,4 +1,3 @@
-"""Agentic Honeypot Main Orchestrator"""
 import asyncio
 import signal
 import sys
@@ -14,27 +13,20 @@ async def main():
     # Initialize database
     await db.connect()
     
-    # Start honeypot services
+    # Start tasks
     tasks = [
         asyncio.create_task(honeypot.ssh_honeypot()),
         asyncio.create_task(agent.monitor()),
     ]
     
-    # Graceful shutdown
-    def shutdown():
-        logger.info("🛑 Shutting down honeypot...")
-        for task in tasks:
-            task.cancel()
-        sys.exit(0)
-    
-    signal.signal(signal.SIGINT, lambda s, f: shutdown())
-    signal.signal(signal.SIGTERM, lambda s, f: shutdown())
-    
-    await asyncio.gather(*tasks, return_exceptions=True)
+    await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
-    asyncio.run(main())
-except keyboardInterrupt:
-pass
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info("🛑 Honeypot stopped by user")
+        sys.exit(0)
+
 
 
