@@ -7,20 +7,22 @@ class Database:
 
     async def connect(self):
         try:
-            # Ye line localhost ki jagah file use karegi
+            # Localhost ki jagah file based database use hoga
             self.conn = await aiosqlite.connect(self.db_path)
-            logger.info(f"✅ SQLite Database connected at {self.db_path}")
+            logger.info(f"✅ SQLite Database connected: {self.db_path}")
             
-            # Table banane ka logic (agar nahi hai)
+            # Logs store karne ke liye table
             await self.conn.execute("""
-                CREATE TABLE IF NOT EXISTS logs (
+                CREATE TABLE IF NOT EXISTS honeypot_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     event TEXT,
+                    ip_address TEXT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
             await self.conn.commit()
         except Exception as e:
-            logger.error(f"❌ Database Error: {e}")
+            logger.error(f"❌ Database Connection Error: {e}")
 
 db = Database()
+
