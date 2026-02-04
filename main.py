@@ -1,39 +1,31 @@
-import asyncio
-import sys
-from flask import Flask, jsonify
-import threading
-from loguru import logger
-from honeypot_server import honeypot
-from agent_controller import agent
-from database import db
+from flask import Flask, request, jsonify
+import os
 
-# 1. Dummy API for Render & Tester
 app = Flask(__name__)
 
-@app.route('/')
-def health_check():
-    return jsonify({"status": "running", "message": "Agentic Honeypot is Active"}), 200
-
-def run_web_server():
-    # Render hamesha port 10000 mangta hai
-    app.run(host='0.0.0.0', port=10000)
-
-async def main():
-    logger.info("🚀 Starting Agentic Honeypot System")
-    await db.connect()
+@app.route('/', methods=['POST']) # Agar tool root URL par hit kar raha hai
+def home():
+    # 1. API Key Check
+    api_key = request.headers.get('x-api-key')
+    expected_key = os.getenv("API_KEY")
     
-    # 2. Start Web Server in a separate thread
-    threading.Thread(target=run_web_server, daemon=True).start()
+    if api_key != expected_key:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    # 2. Body Check (Sabse important fix)
+    data = request.get_json(silent=True) # silent=True se error nahi aayega agar body empty ho
     
-    tasks = [
-        asyncio.create_task(honeypot.ssh_honeypot()),
-        asyncio.create_task(agent.monitor()),
-    ]
-    await asyncio.gather(*tasks)
+    if data is None:
+        # Tester tool empty body bhej raha ho sakta hai, isliye hum empty dict maan lenge
+        data = {}
+
+    return jsonify({
+        "status": "success",
+        "message": "Honeypot is active",
+        "received_data": data
+    }), 200
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        logger.info("🛑 Stopped")
-        sys.exit(0)
+    # Render ke liye port set karna zaroori hai
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
